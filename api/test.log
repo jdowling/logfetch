@@ -1,0 +1,5 @@
+2019-05-14 15:53:16.109 EDT [609] LOG:  received fast shutdown request
+2019-05-14 15:53:16.131 EDT [609] LOG:  aborting any active transactions
+2019-05-14 15:53:16.143 EDT [609] LOG:  background worker "logical replication launcher" (PID 754) exited with exit code 1
+2019-05-14 15:53:16.147 EDT [748] LOG:  shutting down
+2019-05-14 15:53:16.215 EDT [609] LOG:  database system is shut down
