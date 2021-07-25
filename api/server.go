@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 
 	reversescan "github.com/jdowling/logfetch/pkg"
@@ -32,17 +33,26 @@ func (s *Server) GetEvents(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// TODO: differentiate based on err probably
 		// could be a 500 instead in some cases.
-		log.Println("Error opening file:", path)
+		log.Println("Error opening file:", path, " err:", err)
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(w, "Error opening file:%v", path)
 		return
 	}
 	defer file.Close()
 
+	regex_input := r.URL.Query().Get("filter")
+	matcher, err := regexp.Compile(regex_input)
+	if err != nil {
+		log.Println("Error invalid regex:", regex_input, " err:", err)
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, "Invalid regex:%v", regex_input)
+		return
+	}
+
 	match_limit := r.URL.Query().Get("n")
 	matches_size, err := strconv.ParseInt(match_limit, 10, 64)
 	if err != nil {
-		log.Println("Error converting:", match_limit, " to int.")
+		log.Println("Error converting:", match_limit, " to int.", " err:", err)
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, "Error converting:%v to int.", match_limit)
 		return
@@ -51,9 +61,12 @@ func (s *Server) GetEvents(w http.ResponseWriter, r *http.Request) {
 
 	scanner := reversescan.New(file)
 	for scanner.Scan() {
-		matches = append(matches, scanner.Text())
-		if int64(len(matches)) == matches_size {
-			break
+		line := scanner.Text()
+		if matcher.MatchString(line) {
+			matches = append(matches, line)
+			if int64(len(matches)) == matches_size {
+				break
+			}
 		}
 	}
 
