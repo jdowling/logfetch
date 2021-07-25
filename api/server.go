@@ -15,8 +15,8 @@ type EventsResponse struct {
 	Events []string
 }
 
-func New(prefix string) *Server {
-	return &Server{prefix}
+func NewServer() *Server {
+	return &Server{"/var/log"}
 }
 
 func (s *Server) GetEvents(w http.ResponseWriter, r *http.Request) {
