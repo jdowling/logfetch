@@ -7,14 +7,22 @@ import (
 	"net/http"
 )
 
+type Server struct {
+	logFilePrefix string
+}
+
 type EventsResponse struct {
 	Events []string
 }
 
-func GetEvents(w http.ResponseWriter, r *http.Request) {
+func New(prefix string) *Server {
+	return &Server{prefix}
+}
+
+func (s *Server) GetEvents(w http.ResponseWriter, r *http.Request) {
 	log.Println("/events GET params:", r.URL.Query())
 
-	result := EventsResponse{[]string{"hello"}}
+	result := EventsResponse{[]string{fmt.Sprintf("prefix:%v", s.logFilePrefix)}}
 	json, err := json.Marshal(result)
 	if err != nil {
 		// TODO: unit test this path.
